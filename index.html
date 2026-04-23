@@ -590,9 +590,16 @@
       animation: none;
     }
 
-    /* Per-letter forge-in for the hero title. Letters are injected by JS. */
+    /* Per-letter forge-in for the hero title. Letters are injected by JS.
+       Each span needs its own gradient + background-clip:text because
+       background-clip on the parent doesn't paint through child inline-blocks. */
     .hero-title .ltr {
       display: inline-block;
+      background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
       opacity: 0;
       transform: translateY(14px) scale(.92);
       filter: brightness(2.6) blur(2.5px);
@@ -1323,9 +1330,11 @@ async function initForge() {
   renderer.toneMappingExposure = 1.15;
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
-  camera.position.set(0, 1.6, 8.2);
-  camera.lookAt(0, 0.2, 0);
+  // Wider FOV + slightly higher camera so the full hammer arc (apex down
+  // to strike) stays inside the frame, and the anvil base is visible too.
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 50);
+  camera.position.set(0, 2.0, 8.4);
+  camera.lookAt(0, 0.8, 0);
 
   function setSize() {
     const r = canvas.getBoundingClientRect();
@@ -1338,28 +1347,35 @@ async function initForge() {
   }
 
   /* ── lighting ── */
-  scene.add(new THREE.AmbientLight(0x20160c, 0.9));
+  scene.add(new THREE.AmbientLight(0x3a2a20, 1.2));
 
-  const keyLight = new THREE.DirectionalLight(0xccd4e0, 0.55);
+  const keyLight = new THREE.DirectionalLight(0xd6dde8, 1.4);
   keyLight.position.set(4, 6, 4);
   scene.add(keyLight);
 
-  const heatLight = new THREE.PointLight(new THREE.Color(ORANGE), 3.6, 8, 2);
-  heatLight.position.set(0, 1.35, 0.4);
+  const fillLight = new THREE.DirectionalLight(0xffaa66, 0.6);
+  fillLight.position.set(-5, 3, 2);
+  scene.add(fillLight);
+
+  const heatLight = new THREE.PointLight(new THREE.Color(ORANGE), 2.2, 8, 2);
+  heatLight.position.set(0, 1.45, 0.4);
   scene.add(heatLight);
 
-  const rimLight = new THREE.PointLight(0xff4400, 0.8, 10, 2);
+  const rimLight = new THREE.PointLight(0xff4400, 0.7, 10, 2);
   rimLight.position.set(-3, 1, -2);
   scene.add(rimLight);
 
   /* ── anvil ── */
+  // Lighter greys so the anvil reads against the near-black page bg.
   const darkMetal = new THREE.MeshStandardMaterial({
-    color: 0x1a1a1a, roughness: 0.55, metalness: 0.85,
+    color: 0x3a3a3a, roughness: 0.55, metalness: 0.9,
   });
+  // Top face: a touch lighter than the body, no emissive — the hotspot
+  // plane above provides all the orange glow so the whole face isn't hot.
   const topMat = new THREE.MeshStandardMaterial({
-    color: 0x2a2a2a, roughness: 0.35, metalness: 0.95,
+    color: 0x4a4a4a, roughness: 0.3, metalness: 0.95,
     emissive: new THREE.Color(ORANGE),
-    emissiveIntensity: 0.25,
+    emissiveIntensity: 0.0,
   });
 
   const anvil = new THREE.Group();
@@ -1433,8 +1449,9 @@ async function initForge() {
   hammerHandle.position.y = 0.05;
   hammer.add(hammerHandle);
 
-  // Park hammer at its resting apex above the anvil.
-  hammer.position.set(0, 3.6, 0.05);
+  // Park hammer just above the top of the viewport; ceremony pulls it
+  // down into frame, hangs, then strikes.
+  hammer.position.set(0, 4.6, 0.05);
   scene.add(hammer);
 
   /* ── sparks (Three.js Points) ── */
@@ -1466,7 +1483,9 @@ async function initForge() {
 
   let sparkCursor = 0;
   function emitSparks(count, opts = {}) {
-    const origin = opts.origin || { x: 0, y: 1.05, z: 0 };
+    // Anvil top face sits at world y ≈ 0.52 (anvil-group y = -0.4,
+    // top-face local y = 0.92). Spawn sparks just above the surface.
+    const origin = opts.origin || { x: 0, y: 0.62, z: 0 };
     const speed = opts.speed ?? 3.2;
     const lift  = opts.lift  ?? 2.2;
     for (let i = 0; i < count; i++) {
@@ -1552,14 +1571,15 @@ async function initForge() {
     camera.position.set(shakeX, 1.6 + shakeY, 8.2);
     camera.lookAt(0, 0.2, 0);
 
-    // Bloom + emissive relax back to baseline
+    // Bloom + emissive relax back to baseline. Top face stays cool at
+    // baseline and only flares on strike — the hotspot plane carries the
+    // constant glow so the whole striking surface isn't lit up orange.
     bloomBoost *= Math.pow(0.001, dt);
-    bloom.strength = 0.85 + bloomBoost;
+    bloom.strength = 0.6 + bloomBoost;
     hotspotBoost *= Math.pow(0.002, dt);
-    topMat.emissiveIntensity = 0.25 + hotspotBoost;
-    heatLight.intensity = 3.6 + hotspotBoost * 2.5;
-    hotspot.material.opacity = 1;
-    hotspot.scale.setScalar(1 + hotspotBoost * 0.15);
+    topMat.emissiveIntensity = hotspotBoost * 0.6;
+    heatLight.intensity = 2.2 + hotspotBoost * 2.2;
+    hotspot.scale.setScalar(1 + hotspotBoost * 0.2);
 
     // Update sparks
     for (let i = 0; i < SPARKS; i++) {
@@ -1583,7 +1603,7 @@ async function initForge() {
 
   /* ── impact effects ── */
   function impact({ sparks = 180, shake = 0.3, bloomHit = 1.6, hotspotHit = 2.6, domFlash = true, domBurst = true } = {}) {
-    emitSparks(sparks, { origin: { x: 0, y: 1.05, z: 0 }, speed: 4.2, lift: 3.2 });
+    emitSparks(sparks, { origin: { x: 0, y: 0.62, z: 0 }, speed: 4.2, lift: 3.2 });
     shakeT = shakeDur = shake;
     bloomBoost = Math.max(bloomBoost, bloomHit);
     hotspotBoost = Math.max(hotspotBoost, hotspotHit);
@@ -1619,19 +1639,22 @@ async function initForge() {
   });
 
   // Drive the hammer with anime.js targeting hammer.position directly.
+  // Hammer at impact: the head (y+1.05 above group) should graze the top
+  // face (y≈0.92). So a group.position.y of ~ -0.1 to 0.0 lands the head.
+  // Apex around y=2.6 keeps both head and handle in frame.
   const tl = createTimeline();
   tl.add(hammer.position, {
-      y: [5.2, 3.4],
+      y: [4.6, 2.6],
       duration: 700,
       ease: 'outQuad',
     }, 400)
     .add(hammer.position, {
-      y: [3.4, 3.55, 3.35],
+      y: [2.6, 2.75, 2.55],
       duration: 260,
       ease: 'inOutSine',
     }, 1120)
     .add(hammer.position, {
-      y: [3.35, 1.55],
+      y: [2.55, -0.2],
       duration: 180,
       ease: 'inQuad',
       onComplete: () => impact({
@@ -1639,7 +1662,7 @@ async function initForge() {
       }),
     }, 1270)
     .add(hammer.position, {
-      y: [1.55, 2.6, 2.3],
+      y: [-0.2, 1.8, 1.55],
       duration: 650,
       ease: 'outElastic(1, .55)',
     }, 1455);
@@ -1665,12 +1688,12 @@ async function initForge() {
       if (!heroVisible) { scheduleAmbient(); return; }
       const down = createTimeline();
       down.add(hammer.position, {
-          y: [2.3, 2.9],
+          y: [1.55, 2.1],
           duration: 320,
           ease: 'outQuad',
         })
         .add(hammer.position, {
-          y: [2.9, 2.15],
+          y: [2.1, 0.1],
           duration: 160,
           ease: 'inQuad',
           onComplete: () => impact({
@@ -1679,7 +1702,7 @@ async function initForge() {
           }),
         })
         .add(hammer.position, {
-          y: [2.15, 2.55, 2.3],
+          y: [0.1, 1.7, 1.55],
           duration: 420,
           ease: 'outElastic(1, .6)',
         });
