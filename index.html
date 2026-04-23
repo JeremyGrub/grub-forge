@@ -125,7 +125,9 @@
       line-height: .88;
       letter-spacing: .06em;
       margin-top: .6rem;
-      padding-top: 0.14em; /* room for umlaut dots above the Ü */
+      padding-top: 0.32em; /* room for umlaut dots above the Ü; inline-block
+                              letters render with a tighter top than the
+                              original inline h1, so we need more pad here */
       background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -553,9 +555,13 @@
 
     /* Per-letter forge-in for the hero title. Letters are injected by JS.
        Each span needs its own gradient + background-clip:text because
-       background-clip on the parent doesn't paint through child inline-blocks. */
+       background-clip on the parent doesn't paint through child inline-blocks.
+       line-height:1 on the span (vs the parent's .88) keeps Bebas Neue's
+       umlaut dots from being clipped by a too-short inline-block line box. */
     .hero-title .ltr {
       display: inline-block;
+      line-height: 1;
+      overflow: visible;
       background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
       -webkit-background-clip: text;
       background-clip: text;
@@ -755,7 +761,7 @@
 
   <p class="hero-eyebrow">Est. 2026 &nbsp;·&nbsp; GRUB FORGE LLC</p>
   <h1 class="hero-title" data-forge-split>GRÜB<br>FORGE</h1>
-  <p class="hero-sub">Forged with intent. Forged with precision.</p>
+  <p class="hero-sub">Forging Digital Experiences</p>
 
   <div class="anvil-wrap"><!-- decorative SVG anvil -->
     <svg class="anvil-svg" viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg">
