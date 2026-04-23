@@ -1273,6 +1273,13 @@ async function initForge() {
   const webgl = hasWebGL();
   const letters = splitHeroTitle();
 
+  // The .js CSS suppression hides .hero-title entirely so the raw un-split
+  // text doesn't flash before splitHeroTitle() wraps each character. Now
+  // that the letters are individually opacity:0 (via .ltr), it's safe to
+  // reveal the title container — its children still animate in.
+  const titleEl = document.querySelector('.hero-title');
+  if (titleEl) titleEl.style.opacity = '1';
+
   // Pull the CSS theme colors so Three.js materials stay in sync.
   const css = getComputedStyle(document.documentElement);
   const ORANGE = css.getPropertyValue('--orange').trim() || '#ff6a00';
@@ -1492,6 +1499,7 @@ async function initForge() {
   window.addEventListener('resize', setSize);
 
   anvilWrap.classList.add('forge-3d-active');
+  anvilWrap.style.opacity = '1';
 
   /* ── mouse parallax (damped) ── */
   let mx = 0, my = 0;     // target
@@ -1685,8 +1693,15 @@ async function initForge() {
    transitions, keeping the SVG anvil visible. Used when WebGL / ESM
    libraries are unavailable. */
 function runFallbackCeremony(letters) {
+  // Always reveal the anvil-wrap so the SVG anvil fallback is visible.
+  const anvilWrap = document.querySelector('.anvil-wrap');
+  if (anvilWrap) anvilWrap.style.opacity = '1';
+
   if (reducedMotion) {
     letters.forEach(l => l.classList.add('forged'));
+    document.querySelector('.hero-eyebrow').style.opacity = '1';
+    document.querySelector('.hero-sub').style.opacity = '1';
+    document.querySelector('.scroll-cue').style.opacity = '1';
     return;
   }
   const eyebrow = document.querySelector('.hero-eyebrow');
