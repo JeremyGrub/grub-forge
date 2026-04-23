@@ -562,12 +562,18 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 620px;
-      height: 380px;
-      max-width: 94vw;
+      width: 720px;
+      height: 440px;
+      max-width: 96vw;
       pointer-events: none;
       opacity: 0;
       transition: opacity .6s ease;
+      /* Feather the canvas edges into the page background so bloom
+         spillover doesn't draw a visible rectangular box. */
+      -webkit-mask-image: radial-gradient(ellipse at center,
+                            #000 55%, transparent 96%);
+              mask-image: radial-gradient(ellipse at center,
+                            #000 55%, transparent 96%);
     }
     .anvil-wrap.forge-3d-active #forge-3d {
       opacity: 1;
@@ -1325,9 +1331,10 @@ async function initForge() {
   /* ── renderer / scene / camera ── */
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 1.25;
 
   const scene = new THREE.Scene();
   // Wider FOV + slightly higher camera so the full hammer arc (apex down
@@ -1347,33 +1354,38 @@ async function initForge() {
   }
 
   /* ── lighting ── */
-  scene.add(new THREE.AmbientLight(0x3a2a20, 1.2));
+  scene.add(new THREE.AmbientLight(0x4a3a28, 1.6));
 
-  const keyLight = new THREE.DirectionalLight(0xd6dde8, 1.4);
-  keyLight.position.set(4, 6, 4);
+  const keyLight = new THREE.DirectionalLight(0xe6ecf5, 2.8);
+  keyLight.position.set(4, 7, 5);
   scene.add(keyLight);
 
-  const fillLight = new THREE.DirectionalLight(0xffaa66, 0.6);
-  fillLight.position.set(-5, 3, 2);
+  const fillLight = new THREE.DirectionalLight(0xffaa66, 1.3);
+  fillLight.position.set(-5, 3, 3);
   scene.add(fillLight);
 
-  const heatLight = new THREE.PointLight(new THREE.Color(ORANGE), 2.2, 8, 2);
+  const backRim = new THREE.DirectionalLight(0xffffff, 0.9);
+  backRim.position.set(0, 2, -6);
+  scene.add(backRim);
+
+  const heatLight = new THREE.PointLight(new THREE.Color(ORANGE), 2.6, 8, 2);
   heatLight.position.set(0, 1.45, 0.4);
   scene.add(heatLight);
 
-  const rimLight = new THREE.PointLight(0xff4400, 0.7, 10, 2);
+  const rimLight = new THREE.PointLight(0xff4400, 0.9, 10, 2);
   rimLight.position.set(-3, 1, -2);
   scene.add(rimLight);
 
   /* ── anvil ── */
-  // Lighter greys so the anvil reads against the near-black page bg.
+  // Lighter greys + moderate metalness so the anvil reads as a solid
+  // silhouette against the near-black page bg.
   const darkMetal = new THREE.MeshStandardMaterial({
-    color: 0x3a3a3a, roughness: 0.55, metalness: 0.9,
+    color: 0x6a6a6a, roughness: 0.5, metalness: 0.75,
   });
-  // Top face: a touch lighter than the body, no emissive — the hotspot
-  // plane above provides all the orange glow so the whole face isn't hot.
+  // Top face: slightly lighter than the body; emissive stays at 0 so
+  // the hotspot plane is the only constantly-glowing surface.
   const topMat = new THREE.MeshStandardMaterial({
-    color: 0x4a4a4a, roughness: 0.3, metalness: 0.95,
+    color: 0x7a7a7a, roughness: 0.3, metalness: 0.85,
     emissive: new THREE.Color(ORANGE),
     emissiveIntensity: 0.0,
   });
@@ -1433,18 +1445,19 @@ async function initForge() {
   /* ── hammer ── */
   const hammer = new THREE.Group();
   const headMat = new THREE.MeshStandardMaterial({
-    color: 0x2e2622, roughness: 0.4, metalness: 0.85,
+    color: 0x6a6a6a, roughness: 0.45, metalness: 0.8,
   });
   const handleMat = new THREE.MeshStandardMaterial({
-    color: 0x5a3820, roughness: 0.82, metalness: 0.1,
+    color: 0x8a5a30, roughness: 0.75, metalness: 0.15,
   });
 
-  const hammerHead = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.6, 0.6), headMat);
+  // Slightly larger head so it reads clearly at this camera distance.
+  const hammerHead = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.75, 0.7), headMat);
   hammerHead.position.y = 1.05;
   hammer.add(hammerHead);
 
   const hammerHandle = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.09, 0.11, 1.9, 18), handleMat
+    new THREE.CylinderGeometry(0.11, 0.13, 1.9, 18), handleMat
   );
   hammerHandle.position.y = 0.05;
   hammer.add(hammerHandle);
