@@ -8,6 +8,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <script>
+    /* Runs before CSS parses, so .js variants of hero animations can suppress
+       the default fadeUp keyframes and hand control to the forging ceremony. */
+    document.documentElement.classList.add('js');
+  </script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+        "animejs": "https://esm.sh/animejs@4.0.2"
+      }
+    }
+  </script>
   <style>
     :root {
       --bg:          #060606;
@@ -533,6 +547,149 @@
       to   { opacity:1; transform: translateY(0);    }
     }
 
+    /* ─── FORGING CEREMONY ──────────────────── */
+    /* Three.js canvas is layered on top of the SVG anvil inside .anvil-wrap.
+       The SVG stays as a no-JS / no-WebGL fallback. */
+    .anvil-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 280px;
+    }
+
+    #forge-3d {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 620px;
+      height: 380px;
+      max-width: 94vw;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .6s ease;
+    }
+    .anvil-wrap.forge-3d-active #forge-3d {
+      opacity: 1;
+    }
+    .anvil-wrap.forge-3d-active .anvil-svg,
+    .anvil-wrap.forge-3d-active .anvil-glow {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .5s ease;
+    }
+
+    /* When JS is live, suppress default fadeUp on hero pieces so the
+       ceremony timeline can drive them. Falls back gracefully if JS fails. */
+    .js .hero-eyebrow,
+    .js .hero-title,
+    .js .hero-sub,
+    .js .anvil-wrap,
+    .js .scroll-cue {
+      opacity: 0;
+      animation: none;
+    }
+
+    /* Per-letter forge-in for the hero title. Letters are injected by JS. */
+    .hero-title .ltr {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(14px) scale(.92);
+      filter: brightness(2.6) blur(2.5px);
+      will-change: opacity, transform, filter;
+    }
+    .hero-title .ltr.forged {
+      opacity: 1;
+      transform: none;
+      filter: brightness(1) blur(0);
+      transition: opacity .55s ease-out,
+                  transform .55s cubic-bezier(.16, 1.15, .3, 1),
+                  filter .75s ease-out;
+    }
+
+    /* Full-hero impact flash layered behind text so strike lands visibly. */
+    .hero-flash {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 50% 62%,
+        rgba(255,220,160,.6) 0%,
+        rgba(255,130,20,.22) 28%,
+        transparent 60%);
+      opacity: 0;
+      mix-blend-mode: screen;
+      z-index: 0;
+    }
+    .hero-flash.strike { animation: heroFlash .42s ease-out; }
+    @keyframes heroFlash {
+      0%   { opacity: 0; }
+      18%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* ─── FORGED REVEALS ───────────────────── */
+    /* Headings stamp into place with a quick overshoot on scale. */
+    .reveal.stamp {
+      opacity: 0;
+      transform: translateY(32px) scale(.94);
+      transition: opacity .5s ease-out,
+                  transform .55s cubic-bezier(.16, 1.25, .28, 1);
+    }
+    .reveal.stamp.on {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Product cards reveal glowing-hot, then cool. */
+    .p-card.cooling {
+      animation: cardCool .95s ease-out forwards;
+    }
+    @keyframes cardCool {
+      0%   {
+        box-shadow: 0 0 0 1px rgba(255,170,70,.9),
+                    0 0 70px rgba(255,130,20,.4);
+        filter: brightness(1.3);
+      }
+      55%  {
+        box-shadow: 0 0 0 1px rgba(255,130,20,.4),
+                    0 0 35px rgba(255,130,20,.18);
+        filter: brightness(1.1);
+      }
+      100% {
+        box-shadow: 0 24px 70px rgba(255,106,0,0);
+        filter: brightness(1);
+      }
+    }
+
+    /* Stack pills get a quick stamped-in accent. */
+    .pill.stamped {
+      animation: pillStamp .55s cubic-bezier(.16, 1.25, .28, 1);
+    }
+    @keyframes pillStamp {
+      0%   { transform: scale(.82); border-color: var(--orange); color: var(--orange); }
+      60%  { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+
+    /* ─── REDUCED MOTION ──────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      .js .hero-eyebrow,
+      .js .hero-title,
+      .js .hero-sub,
+      .js .anvil-wrap,
+      .js .scroll-cue { opacity: 1; }
+      .hero-title .ltr {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+      .hero-flash.strike,
+      .p-card.cooling,
+      .pill.stamped { animation: none !important; }
+      .reveal.stamp { transition: opacity .3s ease; transform: none; }
+      .reveal.stamp.on { transform: none; }
+    }
+
     /* ─── RESPONSIVE ─────────────────────────── */
     @media (max-width: 820px) {
       nav { padding: 1rem 1.5rem; }
@@ -541,6 +698,8 @@
       .inner { padding: 5rem 1.5rem; }
       .about-grid,
       .products-grid { grid-template-columns: 1fr; gap: 2rem; }
+      #forge-3d { width: 100%; height: 300px; }
+      .anvil-wrap { min-height: 240px; }
     }
   </style>
 </head>
@@ -561,12 +720,15 @@
 <!-- ─── HERO ─────────────────────────────────────── -->
 <section id="hero">
 
+  <div class="hero-flash"></div>
+
   <p class="hero-eyebrow">Est. 2026 &nbsp;·&nbsp; GRUB FORGE LLC</p>
-  <h1 class="hero-title">GRÜB<br>FORGE</h1>
-  <p class="hero-sub">Forging Digital Experiences</p>
+  <h1 class="hero-title" data-forge-split>GRÜB<br>FORGE</h1>
+  <p class="hero-sub">Forged with intent. Forged with precision.</p>
 
   <div class="anvil-wrap">
-    <!-- Anvil SVG -->
+    <canvas id="forge-3d" aria-hidden="true"></canvas>
+    <!-- Anvil SVG (fallback when JS / WebGL unavailable) -->
     <svg class="anvil-svg" viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="body-grad" x1="0" y1="0" x2="0" y2="1">
@@ -824,12 +986,12 @@ const COLORS = [
 function randColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
 
 class Particle {
-  constructor(forced) {
-    this.init(forced);
+  constructor(forced, origin) {
+    this.init(forced, origin);
   }
 
-  init(forced) {
-    const isEmber = !forced && Math.random() < 0.65;
+  init(forced, origin) {
+    const isEmber = !forced && !origin && Math.random() < 0.65;
     this.kind = isEmber ? 'ember' : 'spark';
 
     if (this.kind === 'ember') {
@@ -840,6 +1002,16 @@ class Particle {
       this.vy = -(Math.random() * 1.2 + 0.4);
       this.r  = Math.random() * 2 + 0.8;
       this.maxLife = Math.random() * 220 + 120;
+    } else if (origin) {
+      // Targeted burst: sparks radiate from a given screen point.
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (origin.speed ?? 4) * (0.6 + Math.random() * 0.9);
+      this.x  = origin.x + (Math.random() - 0.5) * (origin.spread ?? 6);
+      this.y  = origin.y + (Math.random() - 0.5) * (origin.spread ?? 6);
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed - (origin.lift ?? 1.2);
+      this.r  = Math.random() * 1.6 + 0.5;
+      this.maxLife = (origin.life ?? 60) + Math.random() * 30;
     } else {
       // Sparks burst from center-ish, arc upward then fall
       this.x  = W * 0.5 + (Math.random() - 0.5) * W * 0.25;
@@ -924,6 +1096,35 @@ function loop(ts) {
 }
 requestAnimationFrame(loop);
 
+/* Expose a small API so the Three.js forging ceremony and section
+   reveals can co-spawn 2D sparks synchronized with 3D events. */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+window.ForgeFx = {
+  burstAt(x, y, count = 24, opts = {}) {
+    if (prefersReducedMotion) return;
+    const n = Math.max(0, count | 0);
+    const origin = {
+      x, y,
+      speed: opts.speed ?? 4.5,
+      spread: opts.spread ?? 8,
+      lift: opts.lift ?? 1.4,
+      life: opts.life ?? 55,
+    };
+    for (let i = 0; i < n; i++) pool.push(new Particle(true, origin));
+  },
+  strikeBurst() {
+    // A centered impact burst around the anvil hotspot — the 2D layer
+    // fires in sync with a Three.js strike for cohesive sparks.
+    if (prefersReducedMotion) return;
+    for (let i = 0; i < 60; i++) pool.push(new Particle(true));
+  },
+  elementCenter(el) {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  },
+};
+
 /* ═══════════════════════════════════════════════
    NAV SCROLL
    ═══════════════════════════════════════════════ */
@@ -934,21 +1135,585 @@ window.addEventListener('scroll', () => {
 
 /* ═══════════════════════════════════════════════
    SCROLL REVEAL
+   Dispatches a `forge:reveal` event for each element as it enters view
+   so the Three.js module can layer forge-specific effects on top. The
+   default fade behaviour still works if the module never loads.
    ═══════════════════════════════════════════════ */
 const reveals = document.querySelectorAll('.reveal');
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (e.isIntersecting) {
-      // Slight stagger for sibling reveals
       const siblings = [...e.target.parentElement.querySelectorAll('.reveal:not(.on)')];
       const idx = siblings.indexOf(e.target);
-      setTimeout(() => e.target.classList.add('on'), idx * 80);
+      setTimeout(() => {
+        e.target.classList.add('on');
+        window.dispatchEvent(new CustomEvent('forge:reveal', {
+          detail: { el: e.target, index: idx }
+        }));
+      }, idx * 80);
       io.unobserve(e.target);
     }
   });
 }, { threshold: 0.1 });
 
 reveals.forEach(el => io.observe(el));
+
+/* ═══════════════════════════════════════════════
+   MODULE-LOAD SAFETY NET
+   If the ES module never signals readiness (slow CDN, blocked network,
+   unsupported import maps) within a short window, drop the `.js` flag so
+   the default CSS fadeUp animations run and the hero isn't stuck blank.
+   ═══════════════════════════════════════════════ */
+setTimeout(() => {
+  if (!document.documentElement.classList.contains('forge-started')) {
+    document.documentElement.classList.remove('js');
+  }
+}, 1800);
+</script>
+
+<script type="module">
+/* ═══════════════════════════════════════════════════════════════════════
+   FORGING CEREMONY
+   - Three.js 3D anvil + hammer in the hero
+   - anime.js v4 timeline choreographing the strike and title reveal
+   - Section reveal enhancements (stamp, cool-down, pill rhythm)
+   Gracefully no-ops on missing WebGL; respects prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── helpers ─────────────────────────────────────────────────────────── */
+
+function hasWebGL() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext &&
+              (c.getContext('webgl2') || c.getContext('webgl')));
+  } catch { return false; }
+}
+
+function splitHeroTitle() {
+  const el = document.querySelector('[data-forge-split]');
+  if (!el) return [];
+  const html = el.innerHTML;
+  const lines = html.split(/<br\s*\/?>/i);
+  el.innerHTML = lines.map(line =>
+    [...line].map(ch =>
+      `<span class="ltr">${ch === ' ' ? '&nbsp;' : ch}</span>`
+    ).join('')
+  ).join('<br>');
+  return [...el.querySelectorAll('.ltr')];
+}
+
+function radialTexture(THREE, stops) {
+  const size = 128;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  stops.forEach(([o, col]) => grad.addColorStop(o, col));
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/* ── Always upgrade section reveals, even if WebGL is unavailable ────── */
+
+function wireRevealUpgrades() {
+  window.addEventListener('forge:reveal', (e) => {
+    const el = e.detail.el;
+    if (reducedMotion) return;
+
+    // Headings and labels: add the "stamp" overshoot + a centered spark puff.
+    if (el.matches('.s-title, .s-label')) {
+      el.classList.add('stamp');
+      if (window.ForgeFx) {
+        const c = window.ForgeFx.elementCenter(el);
+        setTimeout(() => window.ForgeFx.burstAt(c.x, c.y, 18, { speed: 3.8, lift: 1.6 }), 40);
+      }
+    }
+
+    // Product cards: reveal glowing-hot, then cool over ~0.95s.
+    if (el.matches('.p-card')) {
+      el.classList.add('cooling');
+      if (window.ForgeFx) {
+        const c = window.ForgeFx.elementCenter(el);
+        setTimeout(() => window.ForgeFx.burstAt(c.x, c.y - 20, 22, { speed: 4, lift: 1.4 }), 60);
+      }
+    }
+
+    // Stack pill groups: stamp each pill on a short rhythmic stagger.
+    if (el.matches('.pill-group') || el.classList.contains('pill-group')) {
+      const pills = el.querySelectorAll('.pill');
+      pills.forEach((p, i) => {
+        setTimeout(() => {
+          p.classList.add('stamped');
+          setTimeout(() => p.classList.remove('stamped'), 600);
+          if (window.ForgeFx) {
+            const r = p.getBoundingClientRect();
+            window.ForgeFx.burstAt(r.left + 6, r.top + r.height / 2, 4,
+              { speed: 2.2, lift: 0.8, spread: 4, life: 35 });
+          }
+        }, i * 50);
+      });
+    }
+  });
+}
+wireRevealUpgrades();
+
+/* ── Load libs + build scene ─────────────────────────────────────────── */
+
+async function initForge() {
+  // Signal to the classic script that the module is alive so the
+  // safety-net fallback doesn't strip the `.js` flag.
+  document.documentElement.classList.add('forge-started');
+
+  const webgl = hasWebGL();
+  const letters = splitHeroTitle();
+
+  // Pull the CSS theme colors so Three.js materials stay in sync.
+  const css = getComputedStyle(document.documentElement);
+  const ORANGE = css.getPropertyValue('--orange').trim() || '#ff6a00';
+  const AMBER  = css.getPropertyValue('--amber').trim()  || '#ff8c00';
+
+  let THREE, animate, createTimeline;
+  try {
+    THREE = await import('three');
+    const [compMod, rpMod, bloomMod, aMod] = await Promise.all([
+      import('three/addons/postprocessing/EffectComposer.js'),
+      import('three/addons/postprocessing/RenderPass.js'),
+      import('three/addons/postprocessing/UnrealBloomPass.js'),
+      import('animejs'),
+    ]);
+    var EffectComposer  = compMod.EffectComposer;
+    var RenderPass      = rpMod.RenderPass;
+    var UnrealBloomPass = bloomMod.UnrealBloomPass;
+    animate             = aMod.animate;
+    createTimeline      = aMod.createTimeline;
+  } catch (err) {
+    console.warn('[forge] library load failed, keeping SVG fallback.', err);
+    runFallbackCeremony(letters);
+    return;
+  }
+
+  if (!webgl) {
+    console.warn('[forge] WebGL unavailable, keeping SVG fallback.');
+    runFallbackCeremony(letters);
+    return;
+  }
+
+  const canvas = document.getElementById('forge-3d');
+  const anvilWrap = document.querySelector('.anvil-wrap');
+  if (!canvas || !anvilWrap) return;
+
+  /* ── renderer / scene / camera ── */
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
+  camera.position.set(0, 1.6, 8.2);
+  camera.lookAt(0, 0.2, 0);
+
+  function setSize() {
+    const r = canvas.getBoundingClientRect();
+    const w = Math.max(1, r.width);
+    const h = Math.max(1, r.height);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    composer.setSize(w, h);
+  }
+
+  /* ── lighting ── */
+  scene.add(new THREE.AmbientLight(0x20160c, 0.9));
+
+  const keyLight = new THREE.DirectionalLight(0xccd4e0, 0.55);
+  keyLight.position.set(4, 6, 4);
+  scene.add(keyLight);
+
+  const heatLight = new THREE.PointLight(new THREE.Color(ORANGE), 3.6, 8, 2);
+  heatLight.position.set(0, 1.35, 0.4);
+  scene.add(heatLight);
+
+  const rimLight = new THREE.PointLight(0xff4400, 0.8, 10, 2);
+  rimLight.position.set(-3, 1, -2);
+  scene.add(rimLight);
+
+  /* ── anvil ── */
+  const darkMetal = new THREE.MeshStandardMaterial({
+    color: 0x1a1a1a, roughness: 0.55, metalness: 0.85,
+  });
+  const topMat = new THREE.MeshStandardMaterial({
+    color: 0x2a2a2a, roughness: 0.35, metalness: 0.95,
+    emissive: new THREE.Color(ORANGE),
+    emissiveIntensity: 0.25,
+  });
+
+  const anvil = new THREE.Group();
+
+  const topFace = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.18, 1.6), topMat);
+  topFace.position.y = 0.92;
+  anvil.add(topFace);
+
+  // Hot-spot decal plane sitting just above the top face.
+  const hotspot = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.6, 1.2),
+    new THREE.MeshBasicMaterial({
+      map: radialTexture(THREE, [
+        [0.0, 'rgba(255,240,200,1)'],
+        [0.3, 'rgba(255,180,70,0.8)'],
+        [0.7, 'rgba(255,90,10,0.25)'],
+        [1.0, 'rgba(255,60,0,0)'],
+      ]),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+  );
+  hotspot.rotation.x = -Math.PI / 2;
+  hotspot.position.set(0, 1.02, 0);
+  anvil.add(hotspot);
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.9, 1.4), darkMetal);
+  body.position.y = 0.38;
+  anvil.add(body);
+
+  // Horn: a tapered cone pointing left.
+  const horn = new THREE.Mesh(new THREE.ConeGeometry(0.45, 1.3, 20), darkMetal);
+  horn.rotation.z = Math.PI / 2;
+  horn.position.set(-2.15, 0.85, 0);
+  horn.scale.set(1, 1, 0.9);
+  anvil.add(horn);
+
+  // Heel (right side) — slightly shorter block.
+  const heel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 1.3), darkMetal);
+  heel.position.set(2.1, 0.73, 0);
+  anvil.add(heel);
+
+  const waist = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.42, 1.1), darkMetal);
+  waist.position.y = -0.15;
+  anvil.add(waist);
+
+  const base = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.5, 1.4), darkMetal);
+  base.position.y = -0.6;
+  anvil.add(base);
+
+  anvil.position.y = -0.4;
+  scene.add(anvil);
+
+  /* ── hammer ── */
+  const hammer = new THREE.Group();
+  const headMat = new THREE.MeshStandardMaterial({
+    color: 0x2e2622, roughness: 0.4, metalness: 0.85,
+  });
+  const handleMat = new THREE.MeshStandardMaterial({
+    color: 0x5a3820, roughness: 0.82, metalness: 0.1,
+  });
+
+  const hammerHead = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.6, 0.6), headMat);
+  hammerHead.position.y = 1.05;
+  hammer.add(hammerHead);
+
+  const hammerHandle = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.09, 0.11, 1.9, 18), handleMat
+  );
+  hammerHandle.position.y = 0.05;
+  hammer.add(hammerHandle);
+
+  // Park hammer at its resting apex above the anvil.
+  hammer.position.set(0, 3.6, 0.05);
+  scene.add(hammer);
+
+  /* ── sparks (Three.js Points) ── */
+  const SPARKS = 260;
+  const sparkPos = new Float32Array(SPARKS * 3);
+  const sparkVel = new Float32Array(SPARKS * 3);
+  const sparkLife = new Float32Array(SPARKS);
+  const sparkMaxLife = new Float32Array(SPARKS);
+  for (let i = 0; i < SPARKS; i++) sparkPos[i * 3 + 1] = -999; // parked
+
+  const sparkGeo = new THREE.BufferGeometry();
+  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+  const sparkMat = new THREE.PointsMaterial({
+    map: radialTexture(THREE, [
+      [0.0, 'rgba(255,255,255,1)'],
+      [0.3, 'rgba(255,220,140,0.9)'],
+      [0.7, 'rgba(255,110,20,0.35)'],
+      [1.0, 'rgba(255,40,0,0)'],
+    ]),
+    color: new THREE.Color(0xffd080),
+    size: 0.22,
+    sizeAttenuation: true,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const sparkPoints = new THREE.Points(sparkGeo, sparkMat);
+  scene.add(sparkPoints);
+
+  let sparkCursor = 0;
+  function emitSparks(count, opts = {}) {
+    const origin = opts.origin || { x: 0, y: 1.05, z: 0 };
+    const speed = opts.speed ?? 3.2;
+    const lift  = opts.lift  ?? 2.2;
+    for (let i = 0; i < count; i++) {
+      const idx = sparkCursor;
+      const i3 = idx * 3;
+      sparkPos[i3 + 0] = origin.x + (Math.random() - 0.5) * 0.25;
+      sparkPos[i3 + 1] = origin.y;
+      sparkPos[i3 + 2] = origin.z + (Math.random() - 0.5) * 0.25;
+      const theta = Math.random() * Math.PI * 2;
+      const phi   = Math.random() * Math.PI * 0.45;
+      const s     = speed * (0.3 + Math.random());
+      sparkVel[i3 + 0] = Math.cos(theta) * Math.sin(phi) * s;
+      sparkVel[i3 + 1] = Math.cos(phi) * s * 0.55 + lift * (0.6 + Math.random() * 0.8);
+      sparkVel[i3 + 2] = Math.sin(theta) * Math.sin(phi) * s;
+      const life = 0.55 + Math.random() * 0.9;
+      sparkLife[idx] = life;
+      sparkMaxLife[idx] = life;
+      sparkCursor = (idx + 1) % SPARKS;
+    }
+    sparkGeo.attributes.position.needsUpdate = true;
+  }
+
+  /* ── post-processing (bloom) ── */
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.85, 0.7, 0.18);
+  composer.addPass(bloom);
+
+  setSize();
+  window.addEventListener('resize', setSize);
+
+  anvilWrap.classList.add('forge-3d-active');
+
+  /* ── mouse parallax (damped) ── */
+  let mx = 0, my = 0;     // target
+  let px = 0, py = 0;     // damped
+  window.addEventListener('pointermove', (ev) => {
+    const nx = (ev.clientX / window.innerWidth)  - 0.5;
+    const ny = (ev.clientY / window.innerHeight) - 0.5;
+    mx = nx * 0.12;  // yaw radians max ≈ 7°
+    my = ny * 0.06;  // pitch
+  }, { passive: true });
+
+  /* ── render loop / pause when hero off-screen ── */
+  const hero = document.getElementById('hero');
+  let heroVisible = true;
+  new IntersectionObserver((entries) => {
+    heroVisible = entries[0].isIntersecting;
+  }, { threshold: 0.01 }).observe(hero);
+
+  let shakeT = 0;
+  let shakeDur = 0;
+  let bloomBoost = 0;       // extra bloom on strike
+  let hotspotBoost = 0;     // extra emissive on strike
+  let lastTime = performance.now();
+
+  function tick(now) {
+    const dt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
+
+    if (!heroVisible) {
+      requestAnimationFrame(tick);
+      return;
+    }
+
+    // Parallax (simple low-pass)
+    px += (mx - px) * 0.06;
+    py += (my - py) * 0.06;
+    anvil.rotation.y = px;
+    hammer.rotation.y = px;
+    anvil.rotation.x = -py * 0.4;
+
+    // Camera shake decay
+    let shakeX = 0, shakeY = 0;
+    if (shakeT > 0) {
+      shakeT -= dt;
+      const k = Math.max(0, shakeT / shakeDur);
+      const amp = 0.18 * k * k;
+      shakeX = Math.sin(now * 0.06) * amp;
+      shakeY = Math.cos(now * 0.055) * amp * 0.7;
+    }
+    camera.position.set(shakeX, 1.6 + shakeY, 8.2);
+    camera.lookAt(0, 0.2, 0);
+
+    // Bloom + emissive relax back to baseline
+    bloomBoost *= Math.pow(0.001, dt);
+    bloom.strength = 0.85 + bloomBoost;
+    hotspotBoost *= Math.pow(0.002, dt);
+    topMat.emissiveIntensity = 0.25 + hotspotBoost;
+    heatLight.intensity = 3.6 + hotspotBoost * 2.5;
+    hotspot.material.opacity = 1;
+    hotspot.scale.setScalar(1 + hotspotBoost * 0.15);
+
+    // Update sparks
+    for (let i = 0; i < SPARKS; i++) {
+      if (sparkLife[i] <= 0) continue;
+      sparkLife[i] -= dt;
+      const i3 = i * 3;
+      sparkVel[i3 + 1] -= 5.4 * dt;        // gravity
+      sparkVel[i3 + 0] *= 0.985;
+      sparkVel[i3 + 2] *= 0.985;
+      sparkPos[i3 + 0] += sparkVel[i3 + 0] * dt;
+      sparkPos[i3 + 1] += sparkVel[i3 + 1] * dt;
+      sparkPos[i3 + 2] += sparkVel[i3 + 2] * dt;
+      if (sparkLife[i] <= 0) sparkPos[i3 + 1] = -999;
+    }
+    sparkGeo.attributes.position.needsUpdate = true;
+
+    composer.render();
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  /* ── impact effects ── */
+  function impact({ sparks = 180, shake = 0.3, bloomHit = 1.6, hotspotHit = 2.6, domFlash = true, domBurst = true } = {}) {
+    emitSparks(sparks, { origin: { x: 0, y: 1.05, z: 0 }, speed: 4.2, lift: 3.2 });
+    shakeT = shakeDur = shake;
+    bloomBoost = Math.max(bloomBoost, bloomHit);
+    hotspotBoost = Math.max(hotspotBoost, hotspotHit);
+
+    if (domFlash) {
+      const f = document.querySelector('.hero-flash');
+      if (f) {
+        f.classList.remove('strike');
+        void f.offsetWidth;
+        f.classList.add('strike');
+      }
+    }
+    if (domBurst && window.ForgeFx) window.ForgeFx.strikeBurst();
+  }
+
+  /* ── ceremony timeline ── */
+  if (reducedMotion) {
+    // Show everything immediately, skip motion.
+    letters.forEach(l => l.classList.add('forged'));
+    document.querySelector('.hero-eyebrow').style.opacity = '1';
+    document.querySelector('.hero-sub').style.opacity = '1';
+    document.querySelector('.scroll-cue').style.opacity = '1';
+    return;
+  }
+
+  const eyebrow = document.querySelector('.hero-eyebrow');
+  const sub = document.querySelector('.hero-sub');
+  const scrollCue = document.querySelector('.scroll-cue');
+
+  animate(eyebrow, {
+    opacity: [0, 1], translateY: [14, 0],
+    duration: 700, ease: 'outQuad', delay: 200,
+  });
+
+  // Drive the hammer with anime.js targeting hammer.position directly.
+  const tl = createTimeline();
+  tl.add(hammer.position, {
+      y: [5.2, 3.4],
+      duration: 700,
+      ease: 'outQuad',
+    }, 400)
+    .add(hammer.position, {
+      y: [3.4, 3.55, 3.35],
+      duration: 260,
+      ease: 'inOutSine',
+    }, 1120)
+    .add(hammer.position, {
+      y: [3.35, 1.55],
+      duration: 180,
+      ease: 'inQuad',
+      onComplete: () => impact({
+        sparks: 200, shake: 0.32, bloomHit: 1.7, hotspotHit: 2.8,
+      }),
+    }, 1270)
+    .add(hammer.position, {
+      y: [1.55, 2.6, 2.3],
+      duration: 650,
+      ease: 'outElastic(1, .55)',
+    }, 1455);
+
+  // Title forges letter-by-letter starting at impact.
+  letters.forEach((l, i) => {
+    setTimeout(() => l.classList.add('forged'), 1470 + i * 55);
+  });
+
+  animate(sub, {
+    opacity: [0, 1], translateY: [10, 0],
+    duration: 750, ease: 'outQuad', delay: 2150,
+  });
+  animate(scrollCue, {
+    opacity: [0, 1], translateY: [10, 0],
+    duration: 700, ease: 'outQuad', delay: 2550,
+  });
+
+  /* ── ambient half-strikes every 7–9s ── */
+  function scheduleAmbient() {
+    const delay = 7000 + Math.random() * 2200;
+    setTimeout(() => {
+      if (!heroVisible) { scheduleAmbient(); return; }
+      const down = createTimeline();
+      down.add(hammer.position, {
+          y: [2.3, 2.9],
+          duration: 320,
+          ease: 'outQuad',
+        })
+        .add(hammer.position, {
+          y: [2.9, 2.15],
+          duration: 160,
+          ease: 'inQuad',
+          onComplete: () => impact({
+            sparks: 55, shake: 0, bloomHit: 0.6, hotspotHit: 1.2,
+            domFlash: false, domBurst: false,
+          }),
+        })
+        .add(hammer.position, {
+          y: [2.15, 2.55, 2.3],
+          duration: 420,
+          ease: 'outElastic(1, .6)',
+        });
+      scheduleAmbient();
+    }, delay);
+  }
+  setTimeout(scheduleAmbient, 3200);
+}
+
+/* Fallback ceremony: still split the title and fade everything in via CSS
+   transitions, keeping the SVG anvil visible. Used when WebGL / ESM
+   libraries are unavailable. */
+function runFallbackCeremony(letters) {
+  if (reducedMotion) {
+    letters.forEach(l => l.classList.add('forged'));
+    return;
+  }
+  const eyebrow = document.querySelector('.hero-eyebrow');
+  const sub = document.querySelector('.hero-sub');
+  const scrollCue = document.querySelector('.scroll-cue');
+
+  eyebrow.style.transition = 'opacity .8s ease, transform .8s ease';
+  sub.style.transition = 'opacity .8s ease, transform .8s ease';
+  scrollCue.style.transition = 'opacity .8s ease';
+
+  requestAnimationFrame(() => {
+    eyebrow.style.opacity = '1';
+    eyebrow.style.transform = 'translateY(0)';
+  });
+
+  letters.forEach((l, i) => {
+    setTimeout(() => l.classList.add('forged'), 600 + i * 70);
+  });
+
+  setTimeout(() => {
+    sub.style.opacity = '1';
+    sub.style.transform = 'translateY(0)';
+  }, 1600);
+  setTimeout(() => { scrollCue.style.opacity = '1'; }, 2000);
+}
+
+initForge();
 </script>
 
 </body>
