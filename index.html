@@ -554,11 +554,11 @@
     /* Per-letter forge-in for the hero title. Letters are injected by JS.
        Each span needs its own gradient + background-clip:text because
        background-clip on the parent doesn't paint through child inline-blocks.
-       line-height:1 on the span (vs the parent's .88) keeps Bebas Neue's
-       umlaut dots from being clipped by a too-short inline-block line box. */
+       We inherit the parent's tight line-height (.88) so GRÜB and FORGE stay
+       close together; overflow:visible keeps the umlauts renderable past the
+       span's line box. */
     .hero-title .ltr {
       display: inline-block;
-      line-height: 1;
       overflow: visible;
       background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
       -webkit-background-clip: text;
