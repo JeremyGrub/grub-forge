@@ -551,35 +551,29 @@
       animation: none;
     }
 
-    /* The hero title animation wraps each line in a block-level span
-       (injected by JS) so the two lines can forge in independently.
-       We repeat the parent's gradient + background-clip:text here because
-       the parent's background doesn't paint through display:block children
-       — without this the lines render as transparent text on no background
-       and disappear. Same gradient stops mean the visual result matches the
-       un-split h1 closely. */
-    .hero-title .line {
-      display: block;
-      background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
+    /* The hero title animates as a single unit — no child spans, no split
+       gradients — so Bebas Neue's Ü umlauts render exactly like the
+       original and the continuous top→bottom white→red gradient is
+       preserved across both lines. On strike, the .forged class runs a
+       keyframe animation that holds the baseline drop-shadow throughout
+       while blending brightness/blur/transform/opacity from a white-hot
+       "just forged" state to the final crisp title. */
+    .js .hero-title { opacity: 0; }
+    .js .hero-title.forged {
+      animation: forgeTitle .95s cubic-bezier(.16, 1.15, .3, 1) forwards;
     }
-
-    .js .hero-title .line {
-      opacity: 0;
-      transform: translateY(22px) scale(.96);
-      filter: brightness(2.2) blur(3px);
-      will-change: opacity, transform, filter;
-    }
-    .js .hero-title .line.forged {
-      opacity: 1;
-      transform: none;
-      filter: none;
-      transition: opacity .7s ease-out,
-                  transform .85s cubic-bezier(.16, 1.15, .3, 1),
-                  filter .9s ease-out;
+    @keyframes forgeTitle {
+      0% {
+        opacity: 0;
+        transform: translateY(24px) scale(.95);
+        filter: drop-shadow(0 0 60px rgba(255,106,0,.25))
+                brightness(2.6) blur(4px);
+      }
+      100% {
+        opacity: 1;
+        transform: none;
+        filter: drop-shadow(0 0 60px rgba(255,106,0,.25));
+      }
     }
 
     /* Full-viewport impact flash — the strike lights the whole page for
@@ -714,10 +708,9 @@
       .js .hero-sub,
       .js .anvil-wrap,
       .js .scroll-cue { opacity: 1; }
-      .hero-title .line {
+      .js .hero-title {
+        animation: none !important;
         opacity: 1 !important;
-        transform: none !important;
-        filter: none !important;
       }
       .hero-flash.strike,
       .p-card.cooling,
@@ -1219,15 +1212,6 @@ reveals.forEach(el => io.observe(el));
   const charge    = document.querySelector('.hero-charge');
   if (!title) return;
 
-  // Wrap each line in a block-level span so the two lines can forge in
-  // as independent units. No per-letter spans = original umlaut rendering.
-  const lines = (() => {
-    const raw = title.innerHTML.split(/<br\s*\/?>/i);
-    title.innerHTML = raw.map(line => `<span class="line">${line}</span>`).join('');
-    return [...title.querySelectorAll('.line')];
-  })();
-  title.style.opacity = '1';
-
   // Simple inline fade helper.
   const transitionFade = 'opacity .75s ease, transform .75s cubic-bezier(.16,1.15,.3,1)';
   function showAt(el, delay) {
@@ -1242,7 +1226,7 @@ reveals.forEach(el => io.observe(el));
 
   if (reduce) {
     // Present everything immediately, no motion.
-    lines.forEach(l => l.classList.add('forged'));
+    if (title) { title.style.animation = 'none'; title.style.opacity = '1'; }
     [eyebrow, sub, anvilWrap, scrollCue].forEach(el => {
       if (el) { el.style.transition = 'none'; el.style.opacity = '1'; }
     });
@@ -1292,10 +1276,9 @@ reveals.forEach(el => io.observe(el));
       });
     }
 
-    // Both lines forge in with a short stagger starting at the strike.
-    lines.forEach((l, i) => {
-      setTimeout(() => l.classList.add('forged'), i * 180);
-    });
+    // Forge the whole title in as one unit — preserves the continuous
+    // single gradient across both lines and the original umlaut render.
+    title.classList.add('forged');
   }, STRIKE);
 
   // Post-strike elements settle in.
