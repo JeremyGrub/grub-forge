@@ -552,11 +552,20 @@
     }
 
     /* The hero title animation wraps each line in a block-level span
-       (injected by JS) so the two lines can forge in independently
-       without touching the letter-level layout. Block-level wrappers
-       inherit the parent's background-clip gradient, so umlauts render
-       identically to the un-split version — no per-letter filter clipping. */
-    .hero-title .line { display: block; }
+       (injected by JS) so the two lines can forge in independently.
+       We repeat the parent's gradient + background-clip:text here because
+       the parent's background doesn't paint through display:block children
+       — without this the lines render as transparent text on no background
+       and disappear. Same gradient stops mean the visual result matches the
+       un-split h1 closely. */
+    .hero-title .line {
+      display: block;
+      background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
 
     .js .hero-title .line {
       opacity: 0;
