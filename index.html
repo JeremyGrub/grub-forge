@@ -125,7 +125,7 @@
       line-height: .88;
       letter-spacing: .06em;
       margin-top: .6rem;
-      padding-top: 0.18em; /* just enough room for umlaut dots above the Ü */
+      padding-top: 0.14em; /* room for umlaut dots above the Ü */
       background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -551,32 +551,26 @@
       animation: none;
     }
 
-    /* Per-letter forge-in for the hero title. Letters are injected by JS.
-       Each span needs its own gradient + background-clip:text because
-       background-clip on the parent doesn't paint through child inline-blocks.
-       We inherit the parent's tight line-height (.88) so GRÜB and FORGE stay
-       close together; overflow:visible keeps the umlauts renderable past the
-       span's line box. */
-    .hero-title .ltr {
-      display: inline-block;
-      overflow: visible;
-      background: linear-gradient(150deg, #ffffff 20%, #ffb86c 55%, #ff4500 90%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
+    /* The hero title animation wraps each line in a block-level span
+       (injected by JS) so the two lines can forge in independently
+       without touching the letter-level layout. Block-level wrappers
+       inherit the parent's background-clip gradient, so umlauts render
+       identically to the un-split version — no per-letter filter clipping. */
+    .hero-title .line { display: block; }
+
+    .js .hero-title .line {
       opacity: 0;
-      transform: translateY(18px) scale(.9);
-      filter: brightness(3) blur(4px);
+      transform: translateY(22px) scale(.96);
+      filter: brightness(2.2) blur(3px);
       will-change: opacity, transform, filter;
     }
-    .hero-title .ltr.forged {
+    .js .hero-title .line.forged {
       opacity: 1;
       transform: none;
-      filter: brightness(1) blur(0);
-      transition: opacity .55s ease-out,
-                  transform .6s cubic-bezier(.16, 1.15, .3, 1),
-                  filter .8s ease-out;
+      filter: none;
+      transition: opacity .7s ease-out,
+                  transform .85s cubic-bezier(.16, 1.15, .3, 1),
+                  filter .9s ease-out;
     }
 
     /* Full-viewport impact flash — the strike lights the whole page for
@@ -711,7 +705,7 @@
       .js .hero-sub,
       .js .anvil-wrap,
       .js .scroll-cue { opacity: 1; }
-      .hero-title .ltr {
+      .hero-title .line {
         opacity: 1 !important;
         transform: none !important;
         filter: none !important;
@@ -1216,15 +1210,12 @@ reveals.forEach(el => io.observe(el));
   const charge    = document.querySelector('.hero-charge');
   if (!title) return;
 
-  // Wrap each character in a span so letters can forge in independently.
-  const letters = (() => {
-    const lines = title.innerHTML.split(/<br\s*\/?>/i);
-    title.innerHTML = lines.map(line =>
-      [...line].map(ch =>
-        `<span class="ltr">${ch === ' ' ? '&nbsp;' : ch}</span>`
-      ).join('')
-    ).join('<br>');
-    return [...title.querySelectorAll('.ltr')];
+  // Wrap each line in a block-level span so the two lines can forge in
+  // as independent units. No per-letter spans = original umlaut rendering.
+  const lines = (() => {
+    const raw = title.innerHTML.split(/<br\s*\/?>/i);
+    title.innerHTML = raw.map(line => `<span class="line">${line}</span>`).join('');
+    return [...title.querySelectorAll('.line')];
   })();
   title.style.opacity = '1';
 
@@ -1242,7 +1233,7 @@ reveals.forEach(el => io.observe(el));
 
   if (reduce) {
     // Present everything immediately, no motion.
-    letters.forEach(l => l.classList.add('forged'));
+    lines.forEach(l => l.classList.add('forged'));
     [eyebrow, sub, anvilWrap, scrollCue].forEach(el => {
       if (el) { el.style.transition = 'none'; el.style.opacity = '1'; }
     });
@@ -1292,9 +1283,9 @@ reveals.forEach(el => io.observe(el));
       });
     }
 
-    // Letters forge in staggered, starting right at the strike.
-    letters.forEach((l, i) => {
-      setTimeout(() => l.classList.add('forged'), i * 55);
+    // Both lines forge in with a short stagger starting at the strike.
+    lines.forEach((l, i) => {
+      setTimeout(() => l.classList.add('forged'), i * 180);
     });
   }, STRIKE);
 
