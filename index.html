@@ -281,6 +281,29 @@
       overflow: clip;
     }
 
+    .hero-media {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .hero-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center bottom;
+    }
+    .hero-media::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(10,10,11,.95) 0%,
+        rgba(10,10,11,.8) 40%,
+        rgba(10,10,11,.52) 76%,
+        rgba(10,10,11,.32) 100%);
+    }
+
     #heat {
       position: absolute;
       width: 70vmax; height: 70vmax;
@@ -882,6 +905,11 @@
 
 <!-- ─── HERO ────────────────────────────────────── -->
 <section id="index">
+  <div class="hero-media" aria-hidden="true">
+    <video id="hero-vid" autoplay muted loop playsinline preload="auto" poster="assets/hero-poster.jpg">
+      <source src="assets/hero-melt-loop.mp4" type="video/mp4">
+    </video>
+  </div>
   <div id="heat" aria-hidden="true"></div>
   <p class="hero-side mono">Grüb Forge LLC — Est. 2026</p>
 
@@ -1224,6 +1252,23 @@
       burger.setAttribute('aria-expanded', 'false');
     })
   );
+
+  /* ── HERO VIDEO ── */
+  const vid = document.getElementById('hero-vid');
+  if (vid) {
+    if (reduced || (navigator.connection && navigator.connection.saveData)) {
+      vid.removeAttribute('autoplay');
+      vid.pause();
+    } else {
+      const vio = new IntersectionObserver(es => {
+        es.forEach(en => {
+          if (en.isIntersecting) { vid.play().catch(() => {}); }
+          else { vid.pause(); }
+        });
+      }, { threshold: 0 });
+      vio.observe(vid);
+    }
+  }
 
   /* ── CLOCK ── */
   const clock = document.getElementById('clock');

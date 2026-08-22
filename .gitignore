@@ -1,1 +1,4 @@
-".claude/" 
+".claude/"
+# raw generation sources kept local — site uses the -loop and -poster versions
+assets/hero-melt.mp4
+assets/hero-melt.jpg
