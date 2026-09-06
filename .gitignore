@@ -2,3 +2,6 @@
 # raw generation sources kept local — site uses the -loop and -poster versions
 assets/hero-melt.mp4
 assets/hero-melt.jpg
+assets/seq-src/
+# forge-sequence frames — unshipped feature, remove this line when it goes live
+assets/seq/
