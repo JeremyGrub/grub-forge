@@ -669,6 +669,8 @@
       display: flex;
       align-items: center;
       gap: 1rem;
+      flex-wrap: wrap;
+      row-gap: .5rem;
       color: var(--bone-f);
     }
     .plate-tag {
@@ -697,8 +699,32 @@
 
     .plate-wide {
       grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+      gap: 3rem;
     }
-    .plate-wide .plate-desc { max-width: 640px; }
+    .plate-wide .plate-info {
+      display: flex;
+      flex-direction: column;
+      gap: .9rem;
+      flex: 1;
+    }
+    .plate-wide .plate-desc { max-width: 560px; }
+    .plate-shot {
+      flex: 1;
+      max-width: 44%;
+    }
+    .plate-shot img {
+      width: 100%;
+      display: block;
+      border: 1px solid var(--line);
+      filter: saturate(.8);
+      transition: filter .4s, border-color .4s;
+    }
+    .plate-wide:hover .plate-shot img {
+      filter: none;
+      border-color: rgba(255,77,0,.45);
+    }
 
     .prod-tag {
       display: inline-flex;
@@ -1036,9 +1062,25 @@
 
     <div class="plates">
 
+      <a class="plate plate-wide" href="https://www.higherpowerperformance.org/" target="_blank" rel="noopener" data-rv>
+        <div class="plate-info">
+          <span class="plate-top mono">
+            <span>P/01</span>
+            <span class="prod-tag">Client Build</span>
+            <span class="plate-tag">Strength &amp; Nutrition Coaching</span>
+          </span>
+          <h3 class="plate-name disp">Higher Power Performance</h3>
+          <p class="plate-desc">Fully custom client website for a strength and nutrition coaching business — designed and built from scratch to turn visitors into booked consults. Live and earning for a real client.</p>
+          <span class="plate-url mono">higherpowerperformance.org</span>
+        </div>
+        <div class="plate-shot">
+          <img src="assets/hpp-site.webp" alt="Higher Power Performance website homepage" loading="lazy">
+        </div>
+      </a>
+
       <a class="plate" href="https://racegrid.fit" target="_blank" rel="noopener" data-rv>
         <span class="plate-top mono">
-          <span>P/01</span>
+          <span>P/02</span>
           <span class="prod-tag">In Production</span>
           <span class="plate-tag">Hybrid Fitness</span>
         </span>
@@ -1049,7 +1091,7 @@
 
       <a class="plate" href="https://latentlabacademy.com" target="_blank" rel="noopener" data-rv>
         <span class="plate-top mono">
-          <span>P/02</span>
+          <span>P/03</span>
           <span class="plate-tag">Forensic Ed</span>
         </span>
         <h3 class="plate-name disp">Latent Lab Academy</h3>
@@ -1057,30 +1099,9 @@
         <span class="plate-url mono">latentlabacademy.com</span>
       </a>
 
-      <a class="plate plate-wide" href="https://www.higherpowerperformance.org/" target="_blank" rel="noopener" data-rv>
-        <span class="plate-top mono">
-          <span>P/03</span>
-          <span class="prod-tag">Client Build</span>
-          <span class="plate-tag">Strength &amp; Nutrition Coaching</span>
-        </span>
-        <h3 class="plate-name disp">Higher Power Performance</h3>
-        <p class="plate-desc">Fully custom client website for a strength and nutrition coaching business — designed and built from scratch to turn visitors into booked consults. Live and earning for a real client.</p>
-        <span class="plate-url mono">higherpowerperformance.org</span>
-      </a>
-
-      <a class="plate" href="https://dmfinder.io" target="_blank" rel="noopener" data-rv>
-        <span class="plate-top mono">
-          <span>P/04</span>
-          <span class="plate-tag">Marketplace</span>
-        </span>
-        <h3 class="plate-name disp">DM Finder</h3>
-        <p class="plate-desc">The marketplace where D&amp;D players hire skilled Dungeon Masters — find, book, and play.</p>
-        <span class="plate-url mono">dmfinder.io</span>
-      </a>
-
       <a class="plate" href="https://thru.golf" target="_blank" rel="noopener" data-rv>
         <span class="plate-top mono">
-          <span>P/05</span>
+          <span>P/04</span>
           <span class="plate-tag">Live Scoring</span>
         </span>
         <h3 class="plate-name disp">thru.</h3>
@@ -1088,14 +1109,14 @@
         <span class="plate-url mono">thru.golf</span>
       </a>
 
-      <a class="plate plate-wide" href="https://chalkline.build/" target="_blank" rel="noopener" data-rv>
+      <a class="plate" href="https://chalkline.build/" target="_blank" rel="noopener" data-rv>
         <span class="plate-top mono">
-          <span>P/06</span>
+          <span>P/05</span>
           <span class="plate-tag">Working Demo</span>
           <span class="plate-tag">AI Construction</span>
         </span>
         <h3 class="plate-name disp">ChalkLine</h3>
-        <p class="plate-desc">Our AI construction platform — estimating, planning, and field ops in one tool. A full working demo of what we build end-to-end: AI-driven takeoffs, project planning, and field tracking for general contractors.</p>
+        <p class="plate-desc">Our AI construction platform — estimating, planning, and field ops in one tool. A working demo of what we build end-to-end.</p>
         <span class="plate-url mono">chalkline.build</span>
       </a>
 
