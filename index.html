@@ -1193,7 +1193,7 @@
         </ul>
       </div>
 
-      <form class="con-form" id="inq-form" action="/api/inquiry" method="POST" data-rv>
+      <form class="con-form" id="inq-form" action="https://forms.grubforge.com/f/grubforge" method="POST" data-rv>
         <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 
         <div class="f-row">
@@ -1372,7 +1372,7 @@
       btn.disabled = true;
       btn.querySelector('em').textContent = 'Sending…';
       try {
-        const res = await fetch('/api/inquiry', {
+        const res = await fetch('https://forms.grubforge.com/f/grubforge', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(Object.fromEntries(new FormData(inq)))
