@@ -55,8 +55,10 @@ module.exports = async (req, res) => {
   });
 
   if (!r.ok) {
+    const detail = await r.text().catch(() => '');
+    console.error('Resend error', r.status, detail);
     res.statusCode = 502;
-    return res.json({ error: 'send failed' });
+    return res.json({ error: 'send failed', resend: r.status, detail: detail.slice(0, 300) });
   }
 
   // no-JS fallback: the form posts urlencoded and expects a page back
