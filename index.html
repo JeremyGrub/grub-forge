@@ -8,6 +8,12 @@
   <meta property="og:title" content="GRÜB FORGE — Websites. Software. Forged.">
   <meta property="og:description" content="Fully custom websites. AI consulting. Software that ships. One builder, zero middlemen.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://grubforge.com/">
+  <meta property="og:image" content="https://grubforge.com/assets/og-card.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://grubforge.com/assets/og-card.jpg">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -474,21 +480,6 @@
       font-size: 1rem;
     }
 
-    .mq2 {
-      background: var(--ink);
-      color: var(--bone-f);
-      border-block: 1px solid var(--line);
-    }
-    .mq2 .mq-track { animation: mq2 36s linear infinite; }
-    @keyframes mq2 { from { transform: translateX(-50%); } to { transform: translateX(0); } }
-    .mq2 .mq-group {
-      font-family: 'Space Mono', monospace;
-      font-size: .82rem;
-      letter-spacing: .15em;
-      padding: 1.05rem 0;
-    }
-    .mq2 .mq-group s { color: var(--orange); margin: 0 1.4rem; }
-
     /* ─── SECTION LABEL ──────────────────────── */
     .slab {
       display: flex;
@@ -788,7 +779,61 @@
       margin-top: 2rem;
     }
 
-    .con-links { list-style: none; border-top: 1px solid var(--line); }
+    /* ─── INQUIRY FORM ───────────────────────── */
+    .con-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+    .con-form .hp { display: none; }
+    .f-row { display: flex; flex-direction: column; gap: .45rem; }
+    .f-row label { color: var(--bone-f); }
+    .con-form input[type="text"],
+    .con-form input[type="email"],
+    .con-form select,
+    .con-form textarea {
+      background: var(--ink2);
+      border: 1px solid var(--line);
+      color: var(--bone);
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 16px;
+      font-weight: 300;
+      padding: .9rem 1rem;
+      border-radius: 0;
+      width: 100%;
+      transition: border-color .25s;
+    }
+    .con-form select { appearance: none; background-image: linear-gradient(45deg, transparent 49%, var(--orange) 50%), linear-gradient(135deg, var(--orange) 50%, transparent 51%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px; background-repeat: no-repeat; cursor: pointer; }
+    .con-form select:invalid { color: var(--bone-f); }
+    .con-form textarea { resize: vertical; min-height: 110px; }
+    .con-form ::placeholder { color: rgba(237,234,228,.25); }
+    .con-form input:focus,
+    .con-form select:focus,
+    .con-form textarea:focus {
+      outline: none;
+      border-color: var(--orange);
+    }
+    .f-send {
+      border: 0;
+      cursor: pointer;
+      align-self: flex-start;
+      font-size: .74rem;
+    }
+    .f-send:disabled { opacity: .55; cursor: wait; }
+    .f-err {
+      display: none;
+      color: #ff7a4d;
+      margin-top: .2rem;
+    }
+    .f-err.show { display: block; }
+    .f-done {
+      border: 1px solid var(--orange);
+      padding: 2rem;
+    }
+    .f-done .disp { font-size: 1.8rem; color: var(--orange); margin-bottom: .6rem; }
+    .f-done p { color: var(--bone-d); font-size: .95rem; line-height: 1.6; }
+
+    .con-links { list-style: none; border-top: 1px solid var(--line); margin-top: 2.2rem; }
     .con-links a {
       display: flex;
       justify-content: space-between;
@@ -1126,18 +1171,6 @@
   </div>
 </section>
 
-<!-- ─── STACK TICKER ────────────────────────────── -->
-<div class="mq mq2" aria-hidden="true">
-  <div class="mq-track">
-    <div class="mq-group">
-      <span>React</span><s>✕</s><span>Next.js</span><s>✕</s><span>TypeScript</span><s>✕</s><span>Node</span><s>✕</s><span>Python</span><s>✕</s><span>Postgres</span><s>✕</s><span>Supabase</span><s>✕</s><span>Claude</span><s>✕</s><span>OpenAI</span><s>✕</s><span>AWS</span><s>✕</s><span>Vercel</span><s>✕</s><span>Docker</span><s>✕</s>
-    </div>
-    <div class="mq-group">
-      <span>React</span><s>✕</s><span>Next.js</span><s>✕</s><span>TypeScript</span><s>✕</s><span>Node</span><s>✕</s><span>Python</span><s>✕</s><span>Postgres</span><s>✕</s><span>Supabase</span><s>✕</s><span>Claude</span><s>✕</s><span>OpenAI</span><s>✕</s><span>AWS</span><s>✕</s><span>Vercel</span><s>✕</s><span>Docker</span><s>✕</s>
-    </div>
-  </div>
-</div>
-
 <!-- ─── CONTACT ─────────────────────────────────── -->
 <section id="contact">
   <div class="wrap">
@@ -1149,18 +1182,46 @@
       <div data-rv>
         <a class="mail-big" href="mailto:jeremy@grubforge.com?subject=Project%20Inquiry" data-mag>jeremy@grubforge.com</a>
         <p class="con-note">
-          Tell us what's slowing you down — a workflow bleeding hours, a product
-          that needs building, an AI initiative that needs to actually deliver.
+          Tell us what's slowing you down — a website that isn't winning customers,
+          a workflow bleeding hours, a product that needs building.
           Real reply from the builder within one business day.
         </p>
+        <ul class="con-links mono">
+          <li><a href="mailto:jeremy@grubforge.com?subject=Website%20Quote">Get a custom website quote</a></li>
+          <li><a href="mailto:jeremy@grubforge.com?subject=AI%20Audit%20Request">Request an AI workflow audit</a></li>
+          <li><a href="https://chalkline.build/" target="_blank" rel="noopener">Tour the ChalkLine demo</a></li>
+        </ul>
       </div>
 
-      <ul class="con-links mono" data-rv>
-        <li><a href="mailto:jeremy@grubforge.com?subject=Website%20Quote">Get a custom website quote</a></li>
-        <li><a href="mailto:jeremy@grubforge.com?subject=AI%20Audit%20Request">Request an AI workflow audit</a></li>
-        <li><a href="https://chalkline.build/" target="_blank" rel="noopener">Tour the ChalkLine demo</a></li>
-        <li><a href="mailto:jeremy@grubforge.com?subject=Custom%20Software%20Quote">Scope a custom software build</a></li>
-      </ul>
+      <form class="con-form" id="inq-form" action="/api/inquiry" method="POST" data-rv>
+        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="f-row">
+          <label class="mono" for="f-name">Name</label>
+          <input type="text" id="f-name" name="name" required autocomplete="name" placeholder="Your name">
+        </div>
+        <div class="f-row">
+          <label class="mono" for="f-email">Email</label>
+          <input type="email" id="f-email" name="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <div class="f-row">
+          <label class="mono" for="f-need">What do you need?</label>
+          <select id="f-need" name="interest" required>
+            <option value="" disabled selected>Select one</option>
+            <option>Custom website</option>
+            <option>AI consulting &amp; automation</option>
+            <option>Custom software</option>
+            <option>Something else</option>
+          </select>
+        </div>
+        <div class="f-row">
+          <label class="mono" for="f-msg">The problem</label>
+          <textarea id="f-msg" name="message" rows="4" required placeholder="What's slowing you down?"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-solid f-send"><em>Send It</em><em>→</em></button>
+        <p class="f-err mono" id="f-err">Something broke — email us directly at jeremy@grubforge.com</p>
+      </form>
     </div>
   </div>
 </section>
@@ -1298,6 +1359,32 @@
       }, { threshold: 0 });
       vio.observe(vid);
     }
+  }
+
+  /* ── INQUIRY FORM ── */
+  const inq = document.getElementById('inq-form');
+  if (inq) {
+    inq.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = inq.querySelector('.f-send');
+      const err = document.getElementById('f-err');
+      err.classList.remove('show');
+      btn.disabled = true;
+      btn.querySelector('em').textContent = 'Sending…';
+      try {
+        const res = await fetch('/api/inquiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(inq)))
+        });
+        if (!res.ok) throw new Error();
+        inq.innerHTML = '<div class="f-done"><div class="disp">Received.</div><p>Your inquiry is in the queue. Real reply from the builder within one business day.</p></div>';
+      } catch {
+        btn.disabled = false;
+        btn.querySelector('em').textContent = 'Send It';
+        err.classList.add('show');
+      }
+    });
   }
 
   /* ── CLOCK ── */
