@@ -1364,6 +1364,7 @@
   /* ── INQUIRY FORM ── */
   const inq = document.getElementById('inq-form');
   if (inq) {
+    const inqT0 = Date.now();
     inq.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = inq.querySelector('.f-send');
@@ -1375,7 +1376,7 @@
         const res = await fetch('https://forms.grubforge.com/f/grubforge', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(Object.fromEntries(new FormData(inq)))
+          body: JSON.stringify({ ...Object.fromEntries(new FormData(inq)), _elapsed: Date.now() - inqT0 })
         });
         if (!res.ok) throw new Error();
         inq.innerHTML = '<div class="f-done"><div class="disp">Received.</div><p>I read every message myself. You\'ll hear back within one business day.</p></div>';
