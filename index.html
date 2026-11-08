@@ -447,39 +447,6 @@
     }
     .hero-meta b { color: var(--orange); font-weight: 400; }
 
-    /* ─── MARQUEE ────────────────────────────── */
-    .band-tilt {
-      transform: rotate(-1.4deg);
-      width: 104%;
-      margin: 4.5rem 0 4.5rem -2%;
-    }
-    .mq {
-      overflow: hidden;
-      background: var(--orange);
-      color: var(--ink);
-      border-block: 1px solid var(--ink);
-    }
-    .mq-track {
-      display: flex;
-      width: max-content;
-      animation: mq 24s linear infinite;
-    }
-    @keyframes mq { to { transform: translateX(-50%); } }
-    .mq-group {
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-      font-family: 'Archivo Black', sans-serif;
-      font-size: 1.5rem;
-      text-transform: uppercase;
-      padding: .85rem 0;
-    }
-    .mq-group s {
-      text-decoration: none;
-      margin: 0 1.6rem;
-      font-size: 1rem;
-    }
-
     /* ─── SECTION LABEL ──────────────────────── */
     .slab {
       display: flex;
@@ -918,7 +885,6 @@
       .plate { min-height: 0; }
       .plate-wide { flex-direction: column; align-items: stretch; gap: 1.6rem; }
       .plate-shot { max-width: 100%; }
-      .mq-group { font-size: 1.1rem; }
       .stats { grid-template-columns: 1fr 1fr; }
       .foot-bar { justify-content: center; text-align: center; }
     }
@@ -1001,22 +967,6 @@
     <span>Scroll ↓</span>
   </div>
 </section>
-
-<!-- ─── MARQUEE ─────────────────────────────────── -->
-<div class="band-tilt" aria-hidden="true">
-  <div class="mq">
-    <div class="mq-track">
-      <div class="mq-group">
-        <span>Custom Websites</span><s>✦</s><span>Custom Software</span><s>✦</s><span>AI Consulting</span><s>✦</s><span>Built to Ship</span><s>✦</s>
-        <span>Custom Websites</span><s>✦</s><span>Custom Software</span><s>✦</s><span>AI Consulting</span><s>✦</s><span>Built to Ship</span><s>✦</s>
-      </div>
-      <div class="mq-group">
-        <span>Custom Websites</span><s>✦</s><span>Custom Software</span><s>✦</s><span>AI Consulting</span><s>✦</s><span>Built to Ship</span><s>✦</s>
-        <span>Custom Websites</span><s>✦</s><span>Custom Software</span><s>✦</s><span>AI Consulting</span><s>✦</s><span>Built to Ship</span><s>✦</s>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ─── STUDIO ──────────────────────────────────── -->
 <section id="studio">
